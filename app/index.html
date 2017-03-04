@@ -10,8 +10,47 @@
     <!-- endbuild -->
 </head>
 <body>
+    <section class="boatSide">
+        <button class="endRound">End round</button>
+        <div class="stone black"></div>
+        <div class="stone brown"></div>
+        <div class="stone white"></div>
 
-    <div class="boat"></div>
+        <div class="storage storage__gray">
+            <div class="stone gray"></div>
+            <div class="stone gray"></div>
+            <div class="stone gray"></div>
+            <div class="stone gray"></div>
+            <div class="stone gray"></div>
+        </div>
+
+        <div class="dock">
+            <div class="boat">
+                <div class="boat__space"></div>
+                <div class="boat__space"></div>
+                <div class="boat__space"></div>
+            </div>
+            <div class="boat">
+                <div class="boat__space"></div>
+                <div class="boat__space"></div>
+            </div>
+            <div class="boat">
+                <div class="boat__space"></div>
+            </div>
+        </div>
+        <div class="port port__market" data-port="market"></div>
+        <div class="port port__pyramid" data-port="pyramid"></div>
+        <div class="port port__temple" data-port="temple"></div>
+        <div class="port port__obelisk" data-port="obelisk"></div>
+        <div class="port port__burial-chamber" data-port="burial-chamber"></div>
+    </section>
+    <section class="cardSide">
+        <div class="pyramidCounter"></div>
+        <div class="templeCounter"></div>
+        <div class="obeliskCounter"></div>
+        <img src="temp/images/side-a.jpeg" alt="">
+
+    </section>
 
     <!-- build:js assets/scripts/App.js -->
     <script src="temp/scripts/App.js"></script>

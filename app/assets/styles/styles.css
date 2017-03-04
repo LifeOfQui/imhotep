@@ -1,8 +1,58 @@
 @import 'normalize.css';
+@import 'modules/_storage';
+@import 'modules/_stone';
+@import 'modules/_dock';
+@import 'modules/_boat';
+@import 'modules/_port';
 
-.boat {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-color: #f0f;
+body {
+    display: flex;
+}
+
+.boatSide {
+    width: 50vw;
+    height: 100vh;
+    background-color: #ff0;
+    position: relative;
+}
+
+.cardSide {
+    width: 50vw;
+    height: 100vh;
+    position: relative;
+
+    img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .pyramidCounter {
+        position: absolute;
+        width: 100px;
+        height: 40px;
+        top: 34vh;
+        right: 5vw;
+        color: greenyellow;
+        font-size: 23px;
+    }
+
+    .templeCounter {
+        position: absolute;
+        width: 100px;
+        height: 40px;
+        top: 53vh;
+        right: 5vw;
+        color: greenyellow;
+        font-size: 23px;
+    }
+
+    .obeliskCounter {
+        position: absolute;
+        width: 100px;
+        height: 40px;
+        top: 68vh;
+        right: 5vw;
+        color: greenyellow;
+        font-size: 23px;
+    }
 }

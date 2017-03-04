@@ -1,0 +1,29 @@
+.stone {
+    width: 40px;
+    height: 40px;
+    display: block;
+    margin: 5px;
+    z-index: 6;
+    cursor: pointer;
+    box-shadow: 3px 3px 4px black;
+
+    &.brown {
+        background-image: url("../images/stone-brown.png");
+        background-size: 100% auto;
+    }
+
+    &.white {
+        background-image: url("../images/stone-white.png");
+        background-size: 100% auto;
+    }
+
+    &.gray {
+        background-image: url("../images/stone-gray.png");
+        background-size: 100% auto;
+    }
+
+    &.black {
+        background-image: url("../images/stone-black.png");
+        background-size: 100% auto;
+    }
+}

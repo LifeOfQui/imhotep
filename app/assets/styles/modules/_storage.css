@@ -1,0 +1,58 @@
+.storage {
+    width: 185px;
+    height: 136px;
+    display: block;
+    margin: 5px;
+    z-index: 4;
+    position: relative;
+
+
+    &__brown {
+        background-image: url("../images/storage-brown.png");
+        background-size: 100% auto;
+    }
+
+    &__white {
+        background-image: url("../images/storage-white.png");
+        background-size: 100% auto;
+    }
+
+    &__gray {
+        background-image: url("../images/storage-gray.png");
+        background-size: 100% auto;
+    }
+
+    &__black {
+        background-image: url("../images/storage-black.png");
+        background-size: 100% auto;
+    }
+
+    .stone {
+        position: absolute !important;
+
+        &:nth-child(1) {
+            top: 17px;
+            left: 22px;
+        }
+
+        &:nth-child(2) {
+            top: 17px;
+            left: 68px;
+        }
+
+        &:nth-child(3) {
+            top: 17px;
+            left: 114px;
+        }
+
+        &:nth-child(4) {
+            top: 64px;
+            left: 45px;
+        }
+
+        &:nth-child(5) {
+            top: 64px;
+            left: 89px;
+        }
+    }
+}

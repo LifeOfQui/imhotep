@@ -11060,13 +11060,226 @@ var _jquery = __webpack_require__(0);
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-var _jqueryUi = __webpack_require__(1);
-
-var _jqueryUi2 = _interopRequireDefault(_jqueryUi);
+__webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-(0, _jquery2.default)(".boat").draggable();
+// import cardActions from './modules/_cardActions';
+
+var CardObject = {
+    'temple': [],
+    'burialChamber': []
+};
+
+function makeStonesAMess() {
+    (0, _jquery2.default)('.storage').each(function () {
+        (0, _jquery2.default)(this).find('.stone').each(function () {
+            var deg = Math.round(Math.random() * 7);
+            Math.round(Math.random()) !== 1 ? deg *= -1 : deg;
+            (0, _jquery2.default)(this).css('transform', 'rotate(' + deg + 'deg)');
+        });
+    });
+}
+
+(0, _jquery2.default)('.stone').draggable({
+    containment: document.querySelector('.boats'),
+    revert: 'invalid'
+});
+
+var handleStoneDrop = function handleStoneDrop(event, ui) {
+    var stone = ui.draggable;
+    var boatSpace = (0, _jquery2.default)(this);
+
+    (0, _jquery2.default)(stone).detach().css({
+        'top': 'auto',
+        'left': 'auto',
+        'margin': 'auto'
+    }).draggable('disable').appendTo(boatSpace);
+
+    boatSpace.droppable('disable');
+
+    var boat = boatSpace.closest('.boat');
+
+    var occupiedBoatSpaces = boat.find('.boat__space.ui-droppable-disabled').length;
+    if (occupiedBoatSpaces >= 1 && !boat.hasClass('ui-draggable')) {
+        boat.draggable({
+            containment: document.querySelector('.boats'),
+            revert: 'invalid'
+        });
+    }
+
+    findLastAvailableBoatSpace(boat);
+};
+
+function updateCountOfPyramid() {
+    (0, _jquery2.default)('.pyramidCounter').text(CardObject.pyramidScore.toString());
+}
+
+var pyramidScore = [2, 1, 3, 2, 4, 3, 2, 1, 3, 2, 3, 1, 3, 4];
+function calculatePyramidScore() {
+    var roundPyramidArray = CardObject.pyramidRoundArray;
+
+    roundPyramidArray.forEach(function (color) {
+        var num = CardObject.playerColors.indexOf(color);
+        var score = 1;
+
+        if (pyramidScore[0]) {
+            score = pyramidScore[0];
+            pyramidScore.shift();
+        }
+
+        CardObject.pyramidScore[num] += score;
+    });
+
+    updateCountOfPyramid();
+}
+
+function updateCountOfTemple() {
+    (0, _jquery2.default)('.templeCounter').text(CardObject.templeScore.toString());
+}
+
+function calculateTempleScore() {
+    CardObject.temple.forEach(function (color) {
+        var num = CardObject.playerColors.indexOf(color);
+        CardObject.templeScore[num] += 1;
+    });
+
+    updateCountOfTemple();
+}
+
+function updateCountOfObelisk() {
+    (0, _jquery2.default)('.obeliskCounter').text(CardObject.obelisk.toString());
+}
+
+function handleBoatDrop(event, ui) {
+    var boat = ui.draggable;
+    var droppedOn = (0, _jquery2.default)(this);
+    (0, _jquery2.default)(boat).detach().css({
+        'left': 'auto',
+        'top': 'auto'
+    }).appendTo(droppedOn).draggable('disable');
+
+    (0, _jquery2.default)(this).droppable('disable');
+
+    (0, _jquery2.default)(boat).find('.boat__space').each(function () {
+        if ((0, _jquery2.default)(this).hasClass('ui-droppable')) {
+            (0, _jquery2.default)(this).droppable('disable');
+        }
+    });
+
+    var boatCargo = [];
+    (0, _jquery2.default)(boat).find('.boat__space').each(function () {
+        var stone = (0, _jquery2.default)(this).children('.stone');
+        if (stone.length > 0) {
+            var clonedStone = stone.clone();
+            clonedStone.removeClass('stone ui-draggable ui-draggable-handle ui-draggable-disabled');
+            boatCargo.unshift(clonedStone.attr('class'));
+        }
+    });
+
+    cardActions(droppedOn.data('port'), CardObject, boatCargo);
+
+    calculatePyramidScore();
+
+    console.log(CardObject);
+}
+
+function findLastAvailableBoatSpace(boat) {
+    var availableBoatSpaces = (0, _jquery2.default)(boat).find('.boat__space:not(.ui-droppable-disabled)');
+    if (availableBoatSpaces.length > 0) {
+        availableBoatSpaces.last().droppable({
+            accept: ".stone",
+            activeClass: 'active',
+            hoverClass: 'hover',
+            drop: handleStoneDrop
+        });
+    }
+}
+
+function initialSetUp() {
+    //create object that holds all informations
+    CardObject.playerCount = 2;
+    CardObject.playerColors = ['gray', 'white'];
+    CardObject.pyramidScore = [];
+    CardObject.templeScore = [];
+    CardObject.obelisk = [];
+
+    for (var i = 0; i < CardObject.playerCount; i++) {
+        CardObject.pyramidScore.push(0);
+        CardObject.templeScore.push(0);
+        CardObject.obelisk.push(0);
+    }
+
+    updateCountOfTemple();
+    updateCountOfObelisk();
+
+    (0, _jquery2.default)('.boat').each(function () {
+        findLastAvailableBoatSpace(this);
+    });
+
+    (0, _jquery2.default)('.port').droppable({
+        accept: ".boat",
+        activeClass: 'active',
+        hoverClass: 'hover',
+        drop: handleBoatDrop
+    });
+}
+
+initialSetUp();
+makeStonesAMess();
+
+// TODO wird später bei letztem Schiff pro Runde aufgerufen
+(0, _jquery2.default)('.endRound').on('click', function () {
+    calculateTempleScore();
+
+    //    TODO: nach Berechnungen alles wieder auf Anfang setzen
+});
+
+var cardActions = function cardActions(dropTarget, CardObject, boatCargo) {
+    console.log('Boot ist bei ' + dropTarget + ' gelandet mit ' + boatCargo.toString() + '.');
+
+    switch (dropTarget) {
+        case 'market':
+            break;
+        case 'pyramid':
+            var pyramidRoundArray = [];
+            boatCargo.forEach(function (cargo) {
+                pyramidRoundArray.push(cargo);
+            });
+            CardObject.pyramidRoundArray = pyramidRoundArray;
+            break;
+        case 'temple':
+            // nimm Steine und reih sie von links nach rechts auf
+            // if (playerCount < 3) dann bis 5 in einer Reihe sind, ansonsten bis 4
+            boatCargo.forEach(function (cargo) {
+                CardObject.temple.push(cargo);
+                if (CardObject.playerCount < 3) {
+                    if (CardObject.temple.length > 4) {
+                        CardObject.temple.shift();
+                    }
+                } else {
+                    if (CardObject.temple.length > 5) {
+                        CardObject.temple.shift();
+                    }
+                }
+            });
+            break;
+        case 'obelisk':
+            boatCargo.forEach(function (cargo) {
+                var num = CardObject.playerColors.indexOf(cargo);
+                CardObject.obelisk[num] += 1;
+            });
+            updateCountOfObelisk();
+            break;
+        case 'burial-chamber':
+            boatCargo.forEach(function (cargo) {
+                CardObject.burialChamber.push(cargo);
+            });
+            break;
+        default:
+            break;
+    }
+};
 
 /***/ })
 /******/ ]);
