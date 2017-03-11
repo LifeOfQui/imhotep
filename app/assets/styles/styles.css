@@ -4,20 +4,21 @@
 @import 'modules/_dock';
 @import 'modules/_boat';
 @import 'modules/_port';
+@import 'modules/_temple';
 
 body {
     display: flex;
 }
 
 .boatSide {
-    width: 50vw;
+    width: 60vw;
     height: 100vh;
-    background-color: #ff0;
+    background-color: dodgerblue;
     position: relative;
 }
 
 .cardSide {
-    width: 50vw;
+    width: 40vw;
     height: 100vh;
     position: relative;
 

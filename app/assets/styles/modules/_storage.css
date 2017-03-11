@@ -1,10 +1,14 @@
 .storage {
     width: 185px;
     height: 136px;
-    display: block;
+    display: inline-block;
     margin: 5px;
     z-index: 4;
     position: relative;
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, .8);
+    border-radius: 17px;
+    padding-bottom: 20px;
+    background-repeat: no-repeat;
 
 
     &__brown {
@@ -27,32 +31,40 @@
         background-size: 100% auto;
     }
 
+    &__newStonesBtn {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+    }
+
     .stone {
         position: absolute !important;
 
         &:nth-child(1) {
-            top: 17px;
-            left: 22px;
+            top: 19px;
+            left: 19px;
         }
 
         &:nth-child(2) {
-            top: 17px;
-            left: 68px;
+            top: 19px;
+            left: 65px;
         }
 
         &:nth-child(3) {
-            top: 17px;
-            left: 114px;
+            top: 19px;
+            left: 112px;
         }
 
         &:nth-child(4) {
-            top: 64px;
-            left: 45px;
+            top: 66px;
+            left: 42px;
         }
 
         &:nth-child(5) {
-            top: 64px;
-            left: 89px;
+            top: 67px;
+            left: 88px;
         }
     }
 }

@@ -1,16 +1,25 @@
 .boat {
     display: inline-table;
-    background-color: #aaa;
+    background-image: url('../images/boat-floor.jpeg');
+    background-size: 45px 45px;
     line-height: 0;
     z-index: 2;
     user-select: none;
+    margin: 10px 0;
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, .8);
+    border-radius: 22% 50% 50% 22%;
+    padding-left: 10px;
+    padding-right: 50px;
+    border: 2px solid burlywood;
 
     &__space {
         width: 40px;
         height: 40px;
         display: inline-block;
-        background-color: #f0f;
-        margin: 10px;
+        background-image: url('../images/boat-space-floor.jpeg');
+        background-size: 75px 65px;
+        margin: 7px 5px;
+        box-shadow: inset 6px 6px 2px rgba(0, 0, 0, 0.8);
 
         &.active {
             outline: 2px dashed #f00;

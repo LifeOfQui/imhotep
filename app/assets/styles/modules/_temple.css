@@ -1,0 +1,6 @@
+.visibleTempleStones {
+    & > * {
+        float: left;
+        margin: 0;
+    }
+}

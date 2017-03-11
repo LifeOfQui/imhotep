@@ -2,10 +2,18 @@ import $ from 'jquery';
 import './jquery-ui/jquery-ui.min';
 // import cardActions from './modules/_cardActions';
 
-let CardObject = {
+let roundIndex = 1;
+let pyramidRoundArray = [];
+let activePlayer = 0;
+
+let Game = {};
+let GameScore = {};
+
+let Buffer = {
     'temple': [],
     'burialChamber': []
 };
+
 
 function makeStonesAMess () {
     $('.storage').each(function () {
@@ -16,11 +24,6 @@ function makeStonesAMess () {
         });
     });
 }
-
-$('.stone').draggable({
-    containment: document.querySelector('.boats'),
-    revert: 'invalid'
-});
 
 const handleStoneDrop = function (event, ui) {
     const stone = ui.draggable;
@@ -49,18 +52,16 @@ const handleStoneDrop = function (event, ui) {
     }
 
     findLastAvailableBoatSpace(boat);
+
+    setNextPlayerActive();
 };
 
-function updateCountOfPyramid() {
-    $('.pyramidCounter').text(CardObject.pyramidScore.toString());
-}
+const updateCountOfPyramid = () => $('.pyramidCounter').text(GameScore.pyramidScore.toString());
 
 const pyramidScore = [2, 1, 3, 2, 4, 3, 2, 1, 3, 2, 3, 1, 3, 4];
 function calculatePyramidScore() {
-    let roundPyramidArray = CardObject.pyramidRoundArray;
-    
-    roundPyramidArray.forEach(function (color) {
-        const num = CardObject.playerColors.indexOf(color);
+    pyramidRoundArray.forEach(function (color) {
+        const num = Game.playerColors.indexOf(color);
         let score = 1;
 
         if (pyramidScore[0]) {
@@ -68,27 +69,26 @@ function calculatePyramidScore() {
             pyramidScore.shift();
         }
 
-        CardObject.pyramidScore[num] += score;
+        GameScore.pyramidScore[num] += score;
     });
 
     updateCountOfPyramid();
+    recalculateOverallScore();
 }
 
-function updateCountOfTemple() {
-    $('.templeCounter').text(CardObject.templeScore.toString());
-}
+const updateCountOfTemple = () => $('.templeCounter').text(GameScore.templeScore.toString());
 
 function calculateTempleScore() {
-    CardObject.temple.forEach(function (color) {
-        const num = CardObject.playerColors.indexOf(color);
-        CardObject.templeScore[num] += 1;
+    Buffer.temple.forEach(function (color) {
+        const num = Game.playerColors.indexOf(color);
+        GameScore.templeScore[num] += 1;
     });
 
     updateCountOfTemple();
 }
 
 function updateCountOfObelisk() {
-    $('.obeliskCounter').text(CardObject.obelisk.toString());
+    $('.obeliskCounter').text(GameScore.obeliskBuffer.toString());
 }
 
 function handleBoatDrop(event, ui) {
@@ -116,16 +116,18 @@ function handleBoatDrop(event, ui) {
         const stone = $(this).children('.stone');
         if (stone.length > 0) {
             const clonedStone = stone.clone();
-            clonedStone.removeClass('stone ui-draggable ui-draggable-handle ui-draggable-disabled')
+            clonedStone.removeClass('stone ui-draggable ui-draggable-handle ui-draggable-disabled');
             boatCargo.unshift(clonedStone.attr('class'));
         }
     });
 
-    cardActions(droppedOn.data('port'), CardObject, boatCargo);
+    cardActions(droppedOn.data('port'), boatCargo);
 
-    calculatePyramidScore();
+    setNextPlayerActive();
 
-    console.log(CardObject);
+    if ($('.dock').children().length === 0) {
+        endRound();
+    }
 }
 
 function findLastAvailableBoatSpace(boat) {
@@ -140,87 +142,261 @@ function findLastAvailableBoatSpace(boat) {
     }
 }
 
-function initialSetUp() {
-    //create object that holds all informations
-    CardObject.playerCount = 2;
-    CardObject.playerColors = ['gray', 'white'];
-    CardObject.pyramidScore = [];
-    CardObject.templeScore = [];
-    CardObject.obelisk = [];
+function startupCreateStorages() {
+    Game.playerColors.reverse().forEach(function (color) {
+        let $storage = $(`<div class="storage storage__${color}"></div>`);
+        $('.boatSide').prepend($storage);
+        $storage.append(`<button class="storage__newStonesBtn">Get new stones</button>`);
+    });
 
-    for (let i = 0; i < CardObject.playerCount; i++) {
-        CardObject.pyramidScore.push(0);
-        CardObject.templeScore.push(0);
-        CardObject.obelisk.push(0);
+    Game.playerColors.reverse();
+}
+
+function startupStonesInStorage() {
+    Game.playerColors.forEach(function (color) {
+        let storage = $(`.storage__${color}`);
+        storage.prepend(`<div class="stone ${color}"></div>`);
+        storage.prepend(`<div class="stone ${color}"></div>`);
+        storage.prepend(`<div class="stone ${color}"></div>`);
+    });
+}
+
+function initialGameSetUp() {
+    //create object that holds all informations
+    //TODO
+    activePlayer = 0;
+    Game.playerCount = 2;
+    Game.playerColors = ['gray', 'white'];
+    GameScore.pyramidScore = [];
+    GameScore.templeScore = [];
+    GameScore.obeliskScore = [];
+    GameScore.burialChamberScore = [];
+    GameScore.overallScore = [];
+    GameScore.obeliskBuffer = [];
+
+    for (let i = 0; i < Game.playerCount; i++) {
+        GameScore.pyramidScore.push(0);
+        GameScore.templeScore.push(0);
+        GameScore.obeliskScore.push(0);
+        GameScore.burialChamberScore.push(0);
+        GameScore.overallScore.push(0);
+        GameScore.obeliskBuffer.push(0);
     }
 
+    startupCreateStorages();
+    startupStonesInStorage();
+
+    updateCountOfPyramid();
     updateCountOfTemple();
     updateCountOfObelisk();
 
-    $('.boat').each(function() {
-        findLastAvailableBoatSpace(this);
-    });
+    initNewRound();
+}
 
+function endOfGame() {
+    console.log('End of game!');
+}
+
+function setAllPortsDroppable() {
     $('.port').droppable({
         accept: ".boat",
         activeClass: 'active',
         hoverClass: 'hover',
         drop: handleBoatDrop
+    }).droppable( "option", "disabled", false );
+}
+
+const removeAllBoatsFromPorts = () => $('.port').empty();
+
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const availableBoats = [4, 4, 3, 3, 3, 2, 2, 1];
+function getNewBoatsInDock() {
+    let inRoundAvailableBoats = [...availableBoats];
+    const randomCountOfBoats = getRandomInt(3, 4);
+    for (let i = 0; i < randomCountOfBoats; i++) {
+        let boat = $('<div class="boat"></div>');
+
+        const randomCountOfBoatSpace = getRandomInt(1, 4);
+        const boatNumber = inRoundAvailableBoats.indexOf(randomCountOfBoatSpace);
+
+        if (boatNumber > -1) {
+            inRoundAvailableBoats.splice(boatNumber, 1);
+            for(let i = 0; i < randomCountOfBoatSpace; i++) {
+                $('<div class="boat__space"></div>').appendTo(boat);
+            }
+            boat.appendTo('.dock')
+        } else {
+            i--;
+        }
+    }
+}
+
+function initNewRound() {
+    disableAllPlayers();
+    enableActivePlayer();
+
+    removeAllBoatsFromPorts();
+    setAllPortsDroppable();
+
+    getNewBoatsInDock();
+
+    $('.boat').each(function() {
+        findLastAvailableBoatSpace(this);
     });
 }
 
-initialSetUp();
-makeStonesAMess();
+function recalculateOverallScore() {
+    Game.playerColors.forEach(function (color, idx) {
+        console.log(`Recalculating Score for Color ${color} und Playernumber ${idx}`);
+        GameScore.overallScore[idx] =
+            parseInt(GameScore.pyramidScore[idx])
+            + parseInt(GameScore.templeScore[idx])
+            + parseInt(GameScore.obeliskScore[idx])
+            + parseInt(GameScore.burialChamberScore[idx]);
 
-// TODO wird später bei letztem Schiff pro Runde aufgerufen
-$('.endRound').on('click', function () {
+        $(`.score.${color}`).find('span').text(parseInt(GameScore.overallScore[idx]));
+    });
+}
+
+
+function endRound() {
     calculateTempleScore();
+    recalculateOverallScore();
 
+    roundIndex++;
+    if (roundIndex > 7) {
+        alert('Game beendet');
+        endOfGame();
+    } else {
+        alert('Runde beendet');
+        initNewRound();
 //    TODO: nach Berechnungen alles wieder auf Anfang setzen
-});
+    }
+}
 
-const cardActions = function (dropTarget, CardObject, boatCargo) {
+function updateVisibleTempleStones() {
+    $('.visibleTempleStones').empty();
+    Buffer.temple.forEach(function (color) {
+        $('<div class="stone"></div>')
+            .addClass(color)
+            .appendTo('.visibleTempleStones')
+    })
+}
+
+const cardActions = function (dropTarget, boatCargo) {
     console.log(`Boot ist bei ${dropTarget} gelandet mit ${boatCargo.toString()}.`);
 
     switch (dropTarget) {
         case 'market':
             break;
         case 'pyramid':
-            let pyramidRoundArray = [];
+            pyramidRoundArray = [];
             boatCargo.forEach(function (cargo) {
                 pyramidRoundArray.push(cargo);
             });
-            CardObject.pyramidRoundArray = pyramidRoundArray;
+            calculatePyramidScore();
             break;
         case 'temple':
             // nimm Steine und reih sie von links nach rechts auf
             // if (playerCount < 3) dann bis 5 in einer Reihe sind, ansonsten bis 4
+
+            // TODO umschreiben, so das man sie richtig darstellen kann
             boatCargo.forEach(function (cargo) {
-                CardObject.temple.push(cargo);
-                if (CardObject.playerCount < 3) {
-                    if (CardObject.temple.length > 4) {
-                        CardObject.temple.shift();
+                Buffer.temple.push(cargo);
+                if (Game.playerCount < 3) {
+                    if (Buffer.temple.length > 4) {
+                        Buffer.temple.shift();
                     }
                 } else {
-                    if (CardObject.temple.length > 5) {
-                        CardObject.temple.shift();
+                    if (Buffer.temple.length > 5) {
+                        Buffer.temple.shift();
                     }
                 }
+                updateVisibleTempleStones();
             });
             break;
         case 'obelisk':
             boatCargo.forEach(function (cargo) {
-                const num = CardObject.playerColors.indexOf(cargo);
-                CardObject.obelisk[num] += 1;
+                const num = Game.playerColors.indexOf(cargo);
+                GameScore.obeliskBuffer[num] += 1;
             });
             updateCountOfObelisk();
             break;
         case 'burial-chamber':
             boatCargo.forEach(function (cargo) {
-                CardObject.burialChamber.push(cargo);
+                Buffer.burialChamber.push(cargo);
             });
             break;
         default:
             break;
     }
 };
+
+function makeStonesDraggable() {
+    $('.storage .stone').draggable({
+        containment: document.querySelector('.boats'),
+        revert: 'invalid'
+    });
+}
+
+function disableAllPlayers() {
+    makeStonesDraggable();
+    $('.storage').css({
+        'border': '1px solid transparent'
+    });
+
+    $('.stone')
+        .css({})
+        .draggable( 'disable' );
+
+    $(`.storage button`).unbind('click');
+}
+
+function enableActivePlayer() {
+    const activePlayerColor = Game.playerColors[activePlayer];
+
+    $(`.storage__${activePlayerColor}`).css({
+        'border': '1px solid red'
+    });
+
+    $(`.storage__${activePlayerColor} .stone`)
+        .draggable('enable');
+
+    $(`.storage__${activePlayerColor} button`).on('click', function () {
+        getNewStones();
+    });
+}
+
+function setNextPlayerActive() {
+    activePlayer++;
+    if (activePlayer > (Game.playerCount - 1)) {
+        activePlayer = 0;
+    }
+
+    disableAllPlayers();
+    enableActivePlayer();
+}
+
+function getNewStones() {
+    const activePlayerColor = Game.playerColors[activePlayer];
+    const activePlayerStorage = $(`.storage__${activePlayerColor}`);
+    const stones = $(activePlayerStorage).find('.stone');
+    //max 3 Steine
+
+    const stonesToGet = Math.min((5 - stones.length), 3);
+    if (stonesToGet === 0) {
+        alert('Du kannst keine Steine nehmen.');
+        return false;
+    }
+
+    for (let i = 0; i < stonesToGet; i++) {
+        activePlayerStorage.prepend(`<div class="stone ${activePlayerColor}"></div>`);
+    }
+
+    makeStonesAMess();
+    setNextPlayerActive();
+}
+
+initialGameSetUp();
+makeStonesAMess();

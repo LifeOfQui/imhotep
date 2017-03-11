@@ -463,10 +463,14 @@ template {
 .storage {
     width: 185px;
     height: 136px;
-    display: block;
+    display: inline-block;
     margin: 5px;
     z-index: 4;
     position: relative;
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, .8);
+    border-radius: 17px;
+    padding-bottom: 20px;
+    background-repeat: no-repeat;
 }
 
 .storage__brown {
@@ -489,33 +493,42 @@ template {
   background-size: 100% auto;
 }
 
+.storage__newStonesBtn {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+  width: 100%;
+}
+
 .storage .stone {
   position: absolute !important;
 }
 
 .storage .stone:nth-child(1) {
-  top: 17px;
-  left: 22px;
+  top: 19px;
+  left: 19px;
 }
 
 .storage .stone:nth-child(2) {
-  top: 17px;
-  left: 68px;
+  top: 19px;
+  left: 65px;
 }
 
 .storage .stone:nth-child(3) {
-  top: 17px;
-  left: 114px;
+  top: 19px;
+  left: 112px;
 }
 
 .storage .stone:nth-child(4) {
-  top: 64px;
-  left: 45px;
+  top: 66px;
+  left: 42px;
 }
 
 .storage .stone:nth-child(5) {
-  top: 64px;
-  left: 89px;
+  top: 67px;
+  left: 88px;
 }
 
 .stone {
@@ -549,39 +562,46 @@ template {
 }
 
 .dock {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
+    display: -webkit-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
             flex-direction: column;
     -ms-flex-line-pack: center;
         align-content: center;
-    width: 30vw;
-    height: 60vh;
     -ms-flex-pack: distribute;
         justify-content: space-around;
-    background-color: hotpink;
+    padding: 20px;
 }
 
 .boat {
     display: inline-table;
-    background-color: #aaa;
+    background-image: url('../images/boat-floor.jpeg');
+    background-size: 45px 45px;
     line-height: 0;
     z-index: 2;
     -webkit-user-select: none;
        -moz-user-select: none;
         -ms-user-select: none;
             user-select: none;
+    margin: 10px 0;
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, .8);
+    border-radius: 22% 50% 50% 22%;
+    padding-left: 10px;
+    padding-right: 50px;
+    border: 2px solid burlywood;
 }
 
 .boat__space {
   width: 40px;
   height: 40px;
   display: inline-block;
-  background-color: #f0f;
-  margin: 10px;
+  background-image: url('../images/boat-space-floor.jpeg');
+  background-size: 75px 65px;
+  margin: 7px 5px;
+  box-shadow: inset 6px 6px 2px rgba(0, 0, 0, 0.8);
 }
 
 .boat__space.active {
@@ -593,8 +613,8 @@ template {
 }
 
 .port {
-    width: 200px;
-    height: 80px;
+    width: 290px;
+    height: 75px;
     background-color: rgba(200,200,200,0.4);
     position: absolute;
     right: -20px;
@@ -642,6 +662,11 @@ template {
   top: 80vh;
 }
 
+.visibleTempleStones > * {
+  float: left;
+  margin: 0;
+}
+
 body {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -649,14 +674,14 @@ body {
 }
 
 .boatSide {
-    width: 50vw;
+    width: 60vw;
     height: 100vh;
-    background-color: #ff0;
+    background-color: dodgerblue;
     position: relative;
 }
 
 .cardSide {
-    width: 50vw;
+    width: 40vw;
     height: 100vh;
     position: relative;
 }
