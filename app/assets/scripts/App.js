@@ -165,8 +165,6 @@ function initialGameSetUp() {
     //create object that holds all informations
     //TODO
     activePlayer = 0;
-    Game.playerCount = 2;
-    Game.playerColors = ['gray', 'white'];
     GameScore.pyramidScore = [];
     GameScore.templeScore = [];
     GameScore.obeliskScore = [];
@@ -234,13 +232,14 @@ function getNewBoatsInDock() {
 
 function initNewRound() {
     disableAllPlayers();
+    console.log('a');
     enableActivePlayer();
-
+    console.log('b');
     removeAllBoatsFromPorts();
     setAllPortsDroppable();
-
+    console.log('c');
     getNewBoatsInDock();
-
+    console.log('d');
     $('.boat').each(function() {
         findLastAvailableBoatSpace(this);
     });
@@ -275,9 +274,10 @@ function endRound() {
     }
 }
 
-function updateVisibleTempleStones() {
+function updateVisibleTempleStones(visibleStones) {
     $('.visibleTempleStones').empty();
-    Buffer.temple.forEach(function (color) {
+
+    visibleStones.forEach(function (color) {
         $('<div class="stone"></div>')
             .addClass(color)
             .appendTo('.visibleTempleStones')
@@ -300,20 +300,24 @@ const cardActions = function (dropTarget, boatCargo) {
         case 'temple':
             // nimm Steine und reih sie von links nach rechts auf
             // if (playerCount < 3) dann bis 5 in einer Reihe sind, ansonsten bis 4
+            let modulo = 4;
 
-            // TODO umschreiben, so das man sie richtig darstellen kann
             boatCargo.forEach(function (cargo) {
-                Buffer.temple.push(cargo);
-                if (Game.playerCount < 3) {
-                    if (Buffer.temple.length > 4) {
-                        Buffer.temple.shift();
-                    }
-                } else {
-                    if (Buffer.temple.length > 5) {
-                        Buffer.temple.shift();
-                    }
+                if (Game.playerCount >= 3) {
+                    modulo = 5;
                 }
-                updateVisibleTempleStones();
+
+                Buffer.temple.push(cargo);
+                let roundTemple = [...Buffer.temple];
+
+                if (Buffer.temple.length > modulo) {
+                    const mod = Buffer.temple.length % modulo;
+                    let lastFour = roundTemple.splice(roundTemple.length - modulo);
+
+                    roundTemple = lastFour.splice(lastFour.length - mod).concat(lastFour);
+                }
+
+                updateVisibleTempleStones(roundTemple);
             });
             break;
         case 'obelisk':
@@ -342,11 +346,12 @@ function makeStonesDraggable() {
 
 function disableAllPlayers() {
     makeStonesDraggable();
+
     $('.storage').css({
         'border': '1px solid transparent'
     });
 
-    $('.stone')
+    $('.storage .stone')
         .css({})
         .draggable( 'disable' );
 
@@ -398,5 +403,121 @@ function getNewStones() {
     setNextPlayerActive();
 }
 
-initialGameSetUp();
-makeStonesAMess();
+function handleColorChoser(event, ui) {
+    var $dock = $(this);
+
+    // get draggedFromDock here, cause $originalItem will be detached in emptyDock()
+    var $originalItem = $(ui.draggable);
+    var draggedFromSlot = !$originalItem.closest('.dock').length;
+    var itemidx = $originalItem.data('itemidx');
+
+    // check if just redragged to the same dock
+    if (!draggedFromSlot) {
+        var ocuppiedItemIndex = $dock.children('.stone').data('itemidx');
+        if (itemidx === ocuppiedItemIndex) {
+            return;
+        }
+    }
+
+    // Empty the dock
+    _emptyDock($dock);
+
+    // Clone the item and add to the dock
+    var $item = $originalItem.clone(false);
+    $item.data('itemidx', itemidx);
+    $item.appendTo($dock);
+
+    if (draggedFromSlot) {
+        $originalItem.draggable('option', 'disabled', true);
+    } else { // if re-dragged from another dock
+        $originalItem.remove();
+    }
+
+    // Configure re-dragging of items from dock to dock
+    _configureRedragging($item, '.settings');
+}
+
+function _configureRedragging($item, $container) {
+    $item.draggable({
+        containment: $container,
+        revert: 'invalid',
+        helper: 'clone'
+    });
+}
+
+function showSettings() {
+    $('.settings .stone').draggable({
+        containment: document.querySelector('.settings'),
+        revert: 'invalid',
+        helper: 'clone'
+    }).droppable({
+        accept: '.color-choser .stone',
+        activeClass: 'active',
+        hoverClass: 'hover',
+        drop: function(event, ui) {
+            const $originalItem = $(ui.draggable);
+            const itemidx = $originalItem.data('itemidx');
+
+            // remove the item from the dock
+            $originalItem.remove();
+
+            // reactivate the corresponding item in the slot
+            _findSlotItemByIndex(itemidx).draggable('option', 'disabled', false);
+        }
+    });
+
+    $('.color-choser').droppable({
+        accept: ".stone",
+        activeClass: 'active',
+        hoverClass: 'hover',
+        drop: handleColorChoser
+    });
+}
+
+function _emptyDock($dock) {
+    $dock.children('.stone').each(function () {
+        const $item = $(this);
+        const itemidx = $item.data('itemidx');
+        $item.remove();
+
+        _findSlotItemByIndex(itemidx).draggable('option', 'disabled', false);
+    });
+}
+
+function _findSlotItemByIndex(itemidx) {
+    let $item = $();
+    $('.settings').find('.stone').each(function () {
+        if ($(this).data('itemidx') == itemidx) {
+            $item = $(this);
+            return false;
+        }
+    });
+    return $item;
+}
+
+$('.startGameBtn').on('click', function () {
+    Game.playerNames = [];
+    Game.playerColors = ['gray', 'white'];
+    Game.playerCount = 0;
+    $('.playerName').each(function () {
+        if ($(this).val() !== '') {
+            //&& $(this).next('.color-choser').children().length > 0) {
+            Game.playerNames.push($(this).val());
+            // Game.playerColors.push();
+        }
+    });
+
+    Game.playerCount = Game.playerNames.length;
+
+    if (Game.playerCount < 2) {
+        alert('Nicht genug Spieler oder Farben angegeben');
+        return;
+    }
+
+    $('.settings').hide();
+
+    initialGameSetUp();
+    makeStonesAMess();
+});
+
+showSettings();

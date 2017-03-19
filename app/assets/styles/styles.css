@@ -5,6 +5,7 @@
 @import 'modules/_boat';
 @import 'modules/_port';
 @import 'modules/_temple';
+@import 'modules/_settings';
 
 body {
     display: flex;

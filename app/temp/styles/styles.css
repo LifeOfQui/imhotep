@@ -667,6 +667,27 @@ template {
   margin: 0;
 }
 
+.settings {
+    /*display: flex;*/
+    /*justify-content: center;*/
+    /*align-items: center;*/
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*height: 100vh;*/
+    /*width: 100vw;*/
+    /*background-color: #ffffff;*/
+    /*z-index: 100;*/
+}
+
+/*flex-wrap: wrap;*/
+
+.settings .color-choser {
+  height: 40px;
+  width: 40px;
+  border: 1px solid #000;
+}
+
 body {
     display: -webkit-box;
     display: -ms-flexbox;
